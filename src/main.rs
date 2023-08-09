@@ -1,5 +1,5 @@
 use dotenv::dotenv;
-use actix_web::{post, web, App, Error, HttpResponse, HttpServer, Responder, get};
+use actix_web::{post, web, App, Error, HttpResponse, HttpServer, Responder, get, middleware::Logger};
 use awc::Client;
 use chrono::{Datelike, NaiveDate};
 use core::panic;
@@ -8,6 +8,7 @@ use std::env;
 use validator::{Validate, ValidationError};
 use regex::Regex;
 use log::{info, error};
+use actix_cors::Cors;
 
 // Struct that represents the JSON payload that is sent to the API
 #[derive(Serialize, Deserialize, Validate)]
@@ -309,12 +310,21 @@ async fn main() -> std::io::Result<()> {
 
     // Start the Actix Web server
     HttpServer::new(|| {
-        App::new().service(
+        App::new()
+            .wrap(
+                Cors::default()
+                    .allow_any_origin()
+                    .allow_any_method()
+                    .allow_any_header()
+                    .max_age(3600),
+            )
+            .wrap(Logger::default())
+            .service(
             // prefixes all resources and routes attached to it...
-            web::scope("/api")
-                // handle all routes that start with "/api"
-                .service(healthy)
-                .service(send_message),
+                web::scope("/api")
+                    // handle all routes that start with "/api"
+                    .service(healthy)
+                    .service(send_message),
         )
     })
     .bind((host, port)) // Bind to the host and port determined by the environment
