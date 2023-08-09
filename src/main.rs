@@ -246,9 +246,9 @@ async fn send_message(input: web::Json<Input>) -> Result<HttpResponse, Error> {
 
         let client = Client::default();
 
-        let openai_endpoint: String = env::var("OPEN_API_ENDPOINT").expect("OPEN_API_ENDPOINT must be set");
+        let openai_endpoint: String = env::var("OPEN_AI_ENDPOINT").expect("OPEN_AI_ENDPOINT must be set");
 
-        let openai_token: String = env::var("OPEN_API_TOKEN").expect("OPEN_API_TOKEN must be set");
+        let openai_token: String = env::var("OPEN_AI_TOKEN").expect("OPEN_AI_TOKEN must be set");
 
         let response: GPT3Response = client
         .post(openai_endpoint)
