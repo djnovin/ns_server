@@ -45,21 +45,83 @@ To develop the Actix Web application itself, you need to first stop the `ns-api`
 
 After that, you can start the application via the following command
 
-```
+```bash
 cargo run
 ```
 
 It works just like any other Rust applications that use [Cargo](https://doc.rust-lang.org/cargo/).
 
-# 3. Things to do
+# 3. Infrastructure Setup
 
-| Items                                                                                     | Status               |
-| ----------------------------------------------------------------------------------------- | -------------------- |
-| Actix Routes                                                                              | :white_check_mark:   |
-| Unit Tests                                                                                | :white_large_square: |
-| Error Handling                                                                            | :white_large_square: |
-| Containerization                                                                          | :white_check_mark:   |
-| OpenAPI - with [utoipa](https://github.com/juhaku/utoipa)                                 | :white_large_square: |
-| Auth                                                                                      | :white_large_square: |
-| CI/CD                                                                                     | :white_large_square: |
-| ?                                                                                         | :white_large_square: |
+We use Terraform to manage the infrastructure that hosts our Rust microservice on an AWS EC2 instance and stores Docker images in an AWS Elastic Container Registry (ECR).
+
+## Prerequisites
+
+- **Terraform**: Please make sure you have Terraform installed. You can download it from the [official website](https://www.terraform.io/downloads.html).
+- **AWS CLI**: Ensure that the AWS CLI is installed and configured with the necessary IAM permissions. Instructions for installation and configuration can be found on the [AWS CLI website](https://aws.amazon.com/cli/).
+- **Docker**: You'll need Docker to build and push the container image.
+
+## Setting Up Infrastructure
+
+1. **Initialize Terraform**:
+
+   Navigate to the directory containing the Terraform files and run the following command:
+
+   ```bash
+   terraform init
+   ```
+
+2. **Terraform Apply**
+
+Next, apply the Terraform configuration to create the necessary AWS resources:
+
+```bash
+terraform apply
+```
+
+This command will output the ECR repository URL and the public IP address of the EC2 instance.
+
+3. Build Docker Image:
+
+Use the provided Dockerfile to build your Rust microservice:
+
+```bash
+Copy code
+docker build -t YOUR_ECR_REPOSITORY_URL/YOUR_IMAGE:TAG .
+```
+
+Replace YOUR_ECR_REPOSITORY_URL/YOUR_IMAGE:TAG with the ECR repository URL obtained from the Terraform output.
+
+4. Push Docker Image:
+
+Authenticate Docker with the ECR repository and push the image:
+
+```bash
+aws ecr get-login-password --region australia-southeast-2 | docker login --username AWS --password-stdin YOUR_ECR_REPOSITORY_URL
+docker push YOUR_ECR_REPOSITORY_URL/YOUR_IMAGE:TAG
+```
+
+5. Verify the Deployment:
+
+You can verify the deployment by accessing the microservice through the public IP of the EC2 instance, also provided in the Terraform output.
+
+6. Destroy the Infrastructure:
+
+Once you're done, you can destroy the infrastructure by running the following command:
+
+```bash
+terraform destroy
+```
+
+# 4. Things to do
+
+| Items                                                     | Status               |
+| --------------------------------------------------------- | -------------------- |
+| Actix Routes                                              | :white_check_mark:   |
+| Unit Tests                                                | :white_large_square: |
+| Error Handling                                            | :white_large_square: |
+| Containerization                                          | :white_check_mark:   |
+| OpenAPI - with [utoipa](https://github.com/juhaku/utoipa) | :white_large_square: |
+| Auth                                                      | :white_large_square: |
+| CI/CD                                                     | :white_large_square: |
+| ?                                                         | :white_large_square: |
