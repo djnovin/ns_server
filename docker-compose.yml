@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  ns-api:
+    container_name: ns-api
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ENV=prod
+      # add more env variables here
+    ports:
+      - 8080:8080
