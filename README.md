@@ -41,7 +41,7 @@ You can just make a copy from `.env.example` (the sample env file) and rename it
 
 ## 2.3 For Local Development
 
-To develop the Actix Web application itself, you need to first stop the `core-api` service if you did spun it up using docker-compose in the previous steps.
+To develop the Actix Web application itself, you need to first stop the `ns-api` service if you did spun it up using docker-compose in the previous steps.
 
 After that, you can start the application via the following command
 
