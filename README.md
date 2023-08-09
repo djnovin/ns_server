@@ -61,4 +61,5 @@ It works just like any other Rust applications that use [Cargo](https://doc.rust
 | Containerization                                                                          | :white_check_mark:   |
 | OpenAPI - with [utoipa](https://github.com/juhaku/utoipa)                                 | :white_large_square: |
 | Auth                                                                                      | :white_large_square: |
+| CI/CD                                                                                     | :white_large_square: |
 | ?                                                                                         | :white_large_square: |
