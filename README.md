@@ -1,6 +1,6 @@
 # 1. Intro
 
-This is just a micro-service to that generates messages that are proxied to sms/email broker service. It uses the powerful [Actix Web](https://actix.rs/) framework.
+This is just a micro-service that generates messages that are proxied to sms/email broker service. It uses the powerful [Actix Web](https://actix.rs/) framework.
 
 # 2. How to run?
 
@@ -86,7 +86,6 @@ This command will output the ECR repository URL and the public IP address of the
 Use the provided Dockerfile to build your Rust microservice:
 
 ```bash
-Copy code
 docker build -t YOUR_ECR_REPOSITORY_URL/YOUR_IMAGE:TAG .
 ```
 
