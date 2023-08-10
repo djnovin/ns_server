@@ -1,8 +1,28 @@
 use actix_web::Error;
 use awc::Client;
+use serde::{Deserialize, Serialize};
 use std::env;
 
-use crate::{GPT3Request, GPT3Response};
+#[derive(Debug, Deserialize)]
+struct Choice {
+    text: String,
+}
+
+#[derive(Serialize)]
+struct GPT3Request {
+    prompt: String,
+    max_tokens: u32,
+    temperature: f64,
+    top_p: f64,
+    frequency_penalty: f64,
+    presence_penalty: f64,
+    stop: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct GPT3Response {
+    choices: Vec<Choice>,
+}
 
 pub async fn generate_message(prompt: String) -> Result<String, Error> {
     let openai_endpoint: String =
