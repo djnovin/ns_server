@@ -5,12 +5,15 @@ use chrono::{Datelike, NaiveDate};
 use core::panic;
 use serde::{Deserialize, Serialize};
 use std::env;
-use validator::{Validate, ValidationError};
-use regex::Regex;
+use validator::{Validate};
 use log::{info, error};
 use actix_cors::Cors;
 
+mod validations;
 mod helpers;
+
+use crate::helpers::gpt::generate_message;
+use crate::validations::validations::{validate_state, validate_australian_mobile_number, validate_order_number};
 
 // Struct that represents the JSON payload that is sent to the API
 #[derive(Serialize, Deserialize, Validate)]
@@ -19,41 +22,6 @@ struct Input {
      order_number: String,
     // + any other request fields that are required
 }
-
-fn validate_australian_mobile_number(phone_number: &str) -> Result<(), ValidationError> {
-    let re = regex::Regex::new(r"^\+?61\d{9}$").unwrap();
-    if re.is_match(phone_number) {
-        Ok(())
-    } else {
-        let mut error = ValidationError::new("invalid_australian_mobile_number");
-        error.message = Some(format!("Invalid Australian mobile number {}", phone_number).into());
-        Err(error)
-    }
-}
-
-fn validate_order_number(order_number: &str) -> Result<(), ValidationError> {
-    // TODO - Validate the order number using the validator crate by enumerating the rules
-    let re = Regex::new(r"^(MH|MY|MC|MB|MR)\d{5}V?$").unwrap();
-    if re.is_match(order_number) {
-        Ok(())
-    } else {
-        let mut error = ValidationError::new("invalid_order_number");
-        error.message = Some(format!("Invalid order number {}", order_number).into());
-        Err(error)    
-    }
-}
-
-fn validate_state(state: &str) -> Result<(), ValidationError> {
-    match state {
-        "NSW" | "VIC" | "QLD" | "SA" | "WA" | "TAS" | "NT" | "ACT" => Ok(()),
-        _ => {
-            let mut error = ValidationError::new("invalid_state");
-            error.message = Some(format!("Invalid state: {}", state).into());
-            Err(error)
-        }
-    }
-}
-
 // Struct that represents the JSON payload that is returned from the API
 #[derive(Serialize, Deserialize, Validate)]
 struct ResponsePayload {
@@ -242,7 +210,7 @@ async fn send_message(input: web::Json<Input>) -> Result<HttpResponse, Error> {
     ); 
 
     let message = if env::var("GPT").unwrap_or_default() == "true" {
-        generate_message(&prompt).await?
+        generate_message(prompt).await?
     } else {
         format!(
             "Dear Customer, we at Nick Scali Castle Hill are pleased to inform you that your delivery is tentatively booked for the {} week of {}. We will notify you with the exact date as soon as possible. Thank you for choosing our service!",
