@@ -10,6 +10,8 @@ use regex::Regex;
 use log::{info, error};
 use actix_cors::Cors;
 
+mod helpers;
+
 // Struct that represents the JSON payload that is sent to the API
 #[derive(Serialize, Deserialize, Validate)]
 struct Input {
@@ -228,46 +230,19 @@ async fn send_message(input: web::Json<Input>) -> Result<HttpResponse, Error> {
 
     let month: Month = month_number.into(); // Conversion from u32 to Month
 
-    // Option - Could generate custom message using OpenAI GPT-3 API https://beta.openai.com/docs/api-reference/answers
-    async fn generate_message(weekname: &str, month: &str) -> Result<String, Error> {
-        let prompt = format!(
-            "Dear Customer, we at Nick Scali are pleased to inform you that your delivery is tentatively booked for the {} week of {}. We will notify you with the exact date as soon as possible. Thank you for choosing our service!",
-            weekname, month
-        );
-
-        let options = GPT3Request {
-            prompt,
-            max_tokens: 64,
-            temperature: 0.7,
-            top_p: 1.0,
-            frequency_penalty: 0.0,
-            presence_penalty: 0.0,
-            stop: vec!["\n".to_string()],
-        };
-
-        let client = Client::default();
-
-        let openai_endpoint: String = env::var("OPEN_AI_ENDPOINT").expect("OPEN_AI_ENDPOINT must be set");
-
-        let openai_token: String = env::var("OPEN_AI_TOKEN").expect("OPEN_AI_TOKEN must be set");
-
-        let response: GPT3Response = client
-        .post(openai_endpoint)
-        .insert_header(("Authorization", format!("Bearer {}", openai_token)))
-        .send_json(&options)
-        .await
-        .map_err(|e| actix_web::error::ErrorInternalServerError(e))?
-        .json()
-        .await 
-        .map_err(|e| actix_web::error::ErrorInternalServerError(e))?;
-
-        let message = response.choices[0].text.clone();
-
-        Ok(message)
-    }
+    let prompt = format!(
+        "I need to send an SMS to a customer who has purchased furniture from Nick Scali. \
+        The typical delivery takes around 10-12 weeks, and we give an update at the 6-8 week mark. \
+        Their delivery is tentatively set for the {} week of {}. \
+        The sms will be no longer than 2-3 sentences. \
+        Can you create a concise yet friendly SMS that informs them of the tentative delivery week, \
+        reassures them about the update, and thanks them for their purchase? \
+        I want to make sure they know we'll notify them with the exact date as soon as possible.",
+        weekname.as_str(), month.as_str()
+    ); 
 
     let message = if env::var("GPT").unwrap_or_default() == "true" {
-        generate_message(weekname.as_str(), month.as_str()).await?
+        generate_message(&prompt).await?
     } else {
         format!(
             "Dear Customer, we at Nick Scali Castle Hill are pleased to inform you that your delivery is tentatively booked for the {} week of {}. We will notify you with the exact date as soon as possible. Thank you for choosing our service!",
