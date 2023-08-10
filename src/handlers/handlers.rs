@@ -200,8 +200,44 @@ pub async fn send_message(input: web::Json<Input>) -> Result<HttpResponse, Error
     Ok(HttpResponse::Ok().body(message))
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::App;
+
+    #[actix_web::test]
+async fn test_send_message() {
+    // Set the environment variable needed by your test via env::set_var
+    std::env::set_var("ORDER_API_ENDPOINT", "http://example.com/order_api");
+
+    // Create an Actix Web test server
+    let srv = actix_web::test::init_service(
+        App::new().service(send_message)
+    ).await;
+
+    // Define your Input
+    let input = Input {
+        order_number: "MY12345V".to_string(),
+        // Add other fields as needed
+    };
+
+    // Make a request to the endpoint
+    let request = actix_web::test::TestRequest::post()
+        .uri("/message")
+        .set_json(&input)
+        .to_request();
+
+    // Call the service and get the response
+    let response = actix_web::test::call_service(&srv, request).await;
+
+    // Check that the response status code is 200 OK
+    assert_eq!(response.status(), actix_web::http::StatusCode::OK);
+
+    // You can further assert the response body if needed
+}
+}
+
 #[get("/health")]
 pub async fn healthy() -> impl Responder {
     HttpResponse::Ok().body("Server is healthy!")
-    
 }
